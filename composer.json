@@ -1,0 +1,20 @@
+{
+    "name": "luisaedev/query-builder",
+    "description": "Connect with SQL databases and perform complex queries without define SQL statements manually",
+    "type": "library",
+    "license": "MIT",
+    "autoload": {
+        "psr-4": {
+            "LuisaeDev\\QueryBuilder\\": "src/"
+        }
+    },
+    "authors": [
+        {
+            "name": "Luis Aguilar",
+            "email": "dev@luisae.com"
+        }
+    ],
+    "require": {
+        "luisaedev/simple-pdo": "^0.0.1"
+    }
+}
