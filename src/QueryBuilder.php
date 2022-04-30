@@ -18,62 +18,68 @@ use LuisaeDev\SimplePDO\SimplePDO;
  */
 class QueryBuilder {
 
-	/** @var SimplePDO Connection to interact with the database */
-	private $sPDO = null;
+	/** @var LuisaeDev\SimplePDO\SimplePDO Connection to interact with the database */
+	private SimplePDO $sPDO;
 
 	/** @var string SQL operation to perform for the current query: SELECT, INSERT, UPDATE, DELETE ...  */
-	private $operation = null;
+	private ?string $operation = null;
 
 	/** @var string Table name defined for the current query */
-	private $table = null;
+	private ?string $table = null;
 
 	/** @var array Store the columns that will be used for the current query */
-	private $columns = array();
+	private array $columns = array();
 
 	/** @var array Store the parameters that will be binded to the current query */
-	private $params = array();
+	private array $params = array();
 
 	/** @var array Store FROM clause */
-	private $from = array();
+	private array $from = array();
 
 	/** @var array Store WHERE groups */
-	private $where = array();
+	private array $where = array();
 
 	/** @var array Store GROUP BY statements */
-	private $group = array();
+	private array $group = array();
 
 	/** @var string Store HAVING clause */
-	private $having = '';
+	private string $having = '';
 
 	/** @var array Store ORDER BY keywords */
-	private $order = array();
+	private array $order = array();
 
 	/** @var array Store LIMIT clause */
-	private $limit = array();
+	private array $limit = array();
 
 	/** @var string Store the query defined by 'query' method */
-	private $query= '';
+	private string $query= '';
 
 	/** @var array Store all table structures obtained by 'describe' method */
-	private static $tableSchemas = [];
-
-	/** @var array Store all global connections data  */
-	private static $connectionsData = [];
+	private static array $tableSchemas = [];
 
 	/**
 	 * Constructor.
 	 *
-	 * @param string|array|SimplePDO $connectionData Array or string connection data for create a SimplePDO instance, or a SimplePDO instance as well
+	 * @param array $connectionData Array with connection data values
+	 * @param bool  $throws         Define if PDO instance should throws PDOExeption
 	 */
-	public function __construct(mixed $connectionData)
+	public function __construct(array $connectionData, bool $throws = true)
 	{
-		$this->connect($connectionData);
+
+		// If connection is a SimplePDO instance
+		if ($connectionData instanceof \LuisaeDev\SimplePDO\SimplePDO) {
+			$this->sPDO = $connectionData;
+
+		// Create a new SimplePDO instance
+		} else {
+			$this->sPDO = new SimplePDO($connectionData, $throws);
+		}
 	}
 
 	/**
 	 * Magic __get method.
 	 */
-	public function __get($property)
+	public function __get(string $property)
 	{
 		if (is_callable(array($this, $method = 'get_' . $property))) {
 			return $this->$method();
@@ -95,9 +101,9 @@ class QueryBuilder {
 	 *
 	 * Disable the 'autocommit' mode
 	 *
-	 * @return SimplePDO Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function beginTransaction()
+	public function beginTransaction(): self
 	{
 		$this->sPDO->beginTransaction();
 		return $this;
@@ -108,9 +114,9 @@ class QueryBuilder {
 	 *
 	 * Commit the transaction and enable 'autocommit' mode
 	 * 
-	 * @return SimplePDO Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function commit()
+	public function commit(): self
 	{
 		$this->sPDO->commit();
 		return $this;
@@ -121,9 +127,9 @@ class QueryBuilder {
 	 *
 	 * RollBack the transaction and enable 'autocommit' mode
 	 *
-	 * @return SimplePDO Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function rollBack()
+	public function rollBack(): self
 	{
 		$this->sPDO->rollBack();
 		return $this;
@@ -134,40 +140,9 @@ class QueryBuilder {
 	 *
 	 * @return bool
 	 */
-	public function isAutocommit()
+	public function isAutocommit(): bool
 	{
 		return $this->sPDO->isAutocommit();
-	}
-
-	/**
-	 * Establish a SimplePDO connection for self instance use.
-	 *
-	 * @param string|array|SimplePDO $connectionData Array or string connection data for create a SimplePDO instance, or a SimplePDO instance as well
-	 *
-	 * @return QueryBuilder Self instance for chain
-	 */
-	public function connect(mixed $connectionData)
-	{
-
-		// Reset properties
-		$this->reset();
-
-		// If connection is a SimplePDO instance
-		if ($connectionData instanceof \LuisaeDev\SimplePDO\SimplePDO) {
-			$this->sPDO = $connectionData;
-
-		} else {
-
-			// If the connection data is a string, check first if exists a global connection data with that alias name
-			if ((is_string($connectionData)) && (self::connectionDataExists($connectionData))) {
-				$connectionData = self::getConnectionData($connectionData);
-			}
-
-			// Create a new SimplePDO instance
-			$this->sPDO = new SimplePDO($connectionData);
-		}
-
-		return $this;
 	}
 
 	/**
@@ -176,9 +151,9 @@ class QueryBuilder {
 	 * @param string $table   Table's name
 	 * @param array  $columns Array of columns to set
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function insert(string $table, $columns = array())
+	public function insert(string $table, array $columns = array()): self
 	{
 
 		// Reset properties
@@ -204,9 +179,9 @@ class QueryBuilder {
 	 * @param string $table   Table's name
 	 * @param array  $columns Array of columns to update
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function update(string $table, array $columns = array())
+	public function update(string $table, array $columns = array()): self
 	{
 
 		// Reset properties
@@ -231,9 +206,9 @@ class QueryBuilder {
 	 *
 	 * @param string $table Nombre de la tabla
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function delete(string $table)
+	public function delete(string $table): self
 	{
 
 		// Reset properties
@@ -254,9 +229,9 @@ class QueryBuilder {
 	 * @param string|array $columns Array of columns to get
 	 * @param string|null  $table   Table name
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function select(mixed $columns, string $table = null)
+	public function select(string|array $columns, ?string $table = null): self
 	{
 
 		// Reset properties
@@ -301,9 +276,9 @@ class QueryBuilder {
 	 * @param string|array $columns Array of columns to get
 	 * @param string|null  $table   Table's name
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function selectDistinct(mixed $columns, string $table = null)
+	public function selectDistinct(string|array $columns, ?string $table = null): self
 	{
 
 		// Perform a SELECT
@@ -321,9 +296,9 @@ class QueryBuilder {
 	 * @param string $table   Table's name
 	 * @param array  $columns Array of columns to insert
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function insertIgnore(string $table, array $columns = array())
+	public function insertIgnore(string $table, array $columns = array()): self
 	{
 
 		// Reset properties
@@ -349,9 +324,9 @@ class QueryBuilder {
 	 * @param string $table   Table's name
 	 * @param array  $columns Array of columns
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function replace(string $table, array $columns = array())
+	public function replace(string $table, array $columns = array()): self
 	{
 
 		// Reset properties
@@ -377,9 +352,9 @@ class QueryBuilder {
 	 * @param string $query  Consulta SQL a ejecutar
 	 * @param array  $params Array de parámetros agregados
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function query(string $query, array $params = null)
+	public function query(string $query, ?array $params = null): self
 	{
 
 		// Set the current operation
@@ -402,9 +377,9 @@ class QueryBuilder {
 	 * @param string            $table Table name
 	 * @param string|array|null $join  One or several JOIN clauses
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function from(string $table, mixed $join = null)
+	public function from(string $table, string|array|null $join = null): self
 	{
 
 		// Reset the from property
@@ -426,9 +401,9 @@ class QueryBuilder {
 	 * 1- A string with a JOIN clause definition: "INNER JOIN table2 ON table1.id = table2.table1_id"
 	 * 2- An array with a several JOIN clauses definitions, each position could be spacified in two ways, such as a string or an array with 3 values: ['INNER JOIN', 'table2', 'table1.id = table2.table1_id']
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function addFrom(string $table, mixed $join = null)
+	public function addFrom(string $table, string|array|null $join = null): self
 	{
 		array_push($this->from, array(
 			'table' => 	$table,
@@ -449,9 +424,9 @@ class QueryBuilder {
 	 * 2- Such as an array of two positions, this option will create a parameter that will be binded to the statement, so, the first position will specify the value and the second one will be the parameter type
 	 * 3- Such a any value (different to an array), this option will create a parameter that will be binded to the statement, the value will be used as it was passed and the parameter type will be obtained automatically through the table structure
 	 * 
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function addColumn(string $name, mixed $value)
+	public function addColumn(string $name, mixed $value): self
 	{
 
 		// If the value is a RawValue instance, it will be inserted as it was defined into the SQL statement
@@ -528,9 +503,9 @@ class QueryBuilder {
 	 *
 	 * @param array $columns Multiple columns to add
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function addColumns(array $columns)
+	public function addColumns(array $columns): self
 	{
 		foreach ($columns as $columnName => $colValue) {
 			$this->addColumn($columnName, $colValue);
@@ -546,9 +521,9 @@ class QueryBuilder {
 	 * @param mixed  $value Parameter's value
 	 * @param string $type  Parameter's type, could be {'str', 'null', 'bool', 'int'}
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function bindParam(string $name, mixed $value, string $type)
+	public function bindParam(string $name, mixed $value, string $type): self
 	{
 		$this->params[$name] = [ $value, $type ];
 
@@ -560,9 +535,9 @@ class QueryBuilder {
 	 *
 	 * @param array $params Multiple parameter to bind
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function bindParams(array $params = null)
+	public function bindParams(array $params): self
 	{
 		foreach ($params as $name => $value) {
 			$this->bindParam($name, $value[0], $value[1]);
@@ -577,9 +552,9 @@ class QueryBuilder {
 	 * @param string|array $condition Condition or group of conditions to set
 	 * @param array        $params    Parameters to bind
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function where(mixed $condition, array $params = null)
+	public function where(string|array $condition, ?array $params = null): self
 	{
 		$this->where = array();
 		$this->where[] = $condition;
@@ -596,9 +571,9 @@ class QueryBuilder {
 	 * @param string|array $condition Condition or group of conditions to set
 	 * @param array        $params    Parameters to bind
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function andWhere(mixed $condition, array $params = null)
+	public function andWhere(string|array $condition, ?array $params = null): self
 	{
 		$this->where[] = 'AND';
 		$this->where[] = $condition;
@@ -615,9 +590,9 @@ class QueryBuilder {
 	 * @param string|array $condition Condition or group of conditions to set
 	 * @param array        $params    Parameters to bind
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function orWhere(mixed $condition, array $params = null)
+	public function orWhere(string|array $condition, ?array $params = null): self
 	{
 		$this->where[] = 'OR';
 		$this->where[] = $condition;
@@ -634,9 +609,9 @@ class QueryBuilder {
 	 * @param string|array $condition Condition or group of conditions to set
 	 * @param array        $params    Parameters to bind
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function xorWhere(mixed $condition, array $params = null)
+	public function xorWhere(string|array $condition, ?array $params = null): self
 	{
 		$this->where[] = 'XOR';
 		$this->where[] = $condition;
@@ -652,9 +627,9 @@ class QueryBuilder {
 	 *
 	 * @param string $stm GROUP BY statement
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function group(string $stm)
+	public function group(string $stm): self
 	{
 		$this->group = array();
 		array_push($this->group, $stm);
@@ -666,9 +641,9 @@ class QueryBuilder {
 	 *
 	 * @param string $stm GROUP BY statement definition to push
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function addGroup(string $stm)
+	public function addGroup(string $stm): self
 	{
 		array_push($this->group, $stm);
 		return $this;
@@ -677,11 +652,11 @@ class QueryBuilder {
 	/**
 	 * Add a HAVING clause.
 	 *
-	 * @param string $clause Clausule definition
+	 * @param string $clause Clause definition
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function having(string $clause)
+	public function having(string $clause): self
 	{
 		$this->having = $clause;
 		return $this;
@@ -692,9 +667,9 @@ class QueryBuilder {
 	 *
 	 * @param string $keyword ORDER BY keyword definition
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function order(string $keyword)
+	public function order(string $keyword): self
 	{
 		$this->order = array();
 		array_push($this->order, $keyword);
@@ -706,9 +681,9 @@ class QueryBuilder {
 	 *
 	 * @param string $keyword ORDER BY keyword definition
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function addOrder(string $keyword)
+	public function addOrder(string $keyword): self
 	{
 		array_push($this->order, $keyword);
 		return $this;
@@ -720,9 +695,9 @@ class QueryBuilder {
 	 * @param int|string $start Start of the clause, could be a number or a single string definition: '1 OFFSET 10'
 	 * @param int|string $end   (Optional) End of the clause
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function limit(mixed $start, int $end = null)
+	public function limit(int|string $start, int|string|null $end = null): self
 	{
 		$this->limit['start'] = $start;
 		if (isset($end)) {
@@ -736,9 +711,9 @@ class QueryBuilder {
 	 * 
 	 * @param bool $throw Define if PDO Exceptions should be thrown
 	 *
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function execute(bool $throw = true)
+	public function execute(bool $throw = true): self
 	{
 
 		// Obtain the SQL string
@@ -765,30 +740,29 @@ class QueryBuilder {
 	 *
 	 * @return array|false
 	 */
-	public function fetch()
+	public function fetch(): array|false
 	{
 		return $this->sPDO->fetch();
 	}
 
 	/**
 	 * Fetch and return the next row as an object value.
-	 * 
+	 *
 	 * @return object|false
 	 */
-	public function fetchObject() {
+	public function fetchObject(): object|false
+	{
 		return $this->sPDO->fetchObject();
 	}
 
 	/**
 	 * Fetch and return an array with all results.
 	 *
-	 * @param bool $assoc Define if the result is going to be fecth as an associative array
-	 * 
-	 * @return array
+	 * @return array All results obtained
 	 */
-	public function fetchAll(bool $assoc = false)
+	public function fetchAll(): array
 	{
-		return $this->sPDO->fetchAll($assoc);
+		return $this->sPDO->fetchAll();
 	}
 
 	/**
@@ -800,14 +774,14 @@ class QueryBuilder {
 	 * 
 	 * The argument $arg1 can be an array, in that case the rest of the arguments will be ignored, and this array will be a group of conditions defined by an array notation of one, two or three positions each one
 	 * 
-	 * @return QueryBuilder Self instance for chain
+	 * @return self Self instance for chain
 	 */
-	public function match(mixed $arg1, mixed $arg2 = null, mixed $arg3 = null)
+	public function match(mixed $arg1, mixed $arg2 = null, mixed $arg3 = null): self
 	{
 
 		// Finish if the table name was not yet specified
 		if (!isset($this->table)) {
-			return;
+			return $this;
 		}
 
 		// If the argument $arg1 is an array, the rest of them will be ignored
@@ -910,9 +884,9 @@ class QueryBuilder {
 	 * @param mixed        $pk      Primary key value
 	 * @param string|array $columns Columns to fetch
 	 *
-	 * @return array|false Object record or false in case did not found it
+	 * @return array|false Record or false in case did not found it
 	 */
-	public function get(string $table, mixed $pk, mixed $columns = '*')
+	public function get(string $table, mixed $pk, string|array $columns = '*'): array|false
 	{
 
 		// Start a select query and match the value by its primary key
@@ -921,7 +895,7 @@ class QueryBuilder {
 			->match($pk)
 			->limit(1)
 			->execute()
-			->fetchObject();
+			->fetch();
 	}
 
 	/**
@@ -933,7 +907,7 @@ class QueryBuilder {
 	 *
 	 * @return int Amount of records founded
 	 */
-	public function count(string $expression, string $table, mixed $match = null)
+	public function count(string $expression, string $table, mixed $match = null): int
 	{
 
 		// Start a SELECT query
@@ -964,7 +938,7 @@ class QueryBuilder {
 	 *
 	 * @return bool Indicate if the record exists
 	 */
-	public function exists(string $table, mixed $pk)
+	public function exists(string $table, mixed $pk): bool
 	{
 		$count = $this->count('*', $table, $pk);
 		if ($count > 0) {
@@ -975,21 +949,31 @@ class QueryBuilder {
 	}
 
 	/**
-	 * Return the last produced error after an executed statement.
+	 * Return the last error produced.
 	 *
-	 * @return array|null
+	 * @return array Array with information about the error produced
 	 */
-	public function errorInfo()
+	public function errorInfo(): array
 	{
 		return $this->sPDO->errorInfo();
 	}
 
 	/**
-	 * Return the last inserted ID after an executed statement.
+	 * Check if an error was produced.
 	 *
-	 * @return mixed|null
+	 * @return bool Confirm if exists an error
 	 */
-	public function lastInsertId()
+	public function errorExists(): bool
+	{
+		return $this->sPDO->errorExists();
+	}
+
+	/**
+	 * Return the last inserted ID.
+	 *
+	 * @return mixed Last inserted ID or null
+	 */
+	public function lastInsertId(): mixed
 	{
 		return $this->sPDO->lastInsertId();
 	}
@@ -997,9 +981,9 @@ class QueryBuilder {
 	/**
 	 * Return the total affected rows after an executed statement.
 	 *
-	 * @return int
+	 * @return int Return the total affected rows after an executed statement. If none records was affected, the result will be 0
 	 */
-	public function rowCount()
+	public function rowCount(): int
 	{
 		return $this->sPDO->rowCount();
 	}
@@ -1009,7 +993,7 @@ class QueryBuilder {
 	 *
 	 * @return array
 	 */
-	public function getColumns()
+	public function getColumns(): array
 	{
 		return $this->columns;
 	}
@@ -1019,7 +1003,7 @@ class QueryBuilder {
 	 *
 	 * @return array
 	 */
-	public function getParams()
+	public function getParams(): array
 	{
 		return $this->params;
 	}
@@ -1029,7 +1013,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	public function getSQL()
+	public function getSQL(): string
 	{
 		$str = '';
 
@@ -1083,9 +1067,9 @@ class QueryBuilder {
 	/**
 	 * 'dbname' property.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	private function get_dbname()
+	private function get_dbname(): string
 	{
 		return $this->sPDO->dbname;
 	}
@@ -1093,9 +1077,9 @@ class QueryBuilder {
 	/**
 	 * 'driver' property.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	private function get_driver()
+	private function get_driver(): string
 	{
 		return $this->sPDO->driver;
 	}
@@ -1103,9 +1087,9 @@ class QueryBuilder {
 	/**
 	 * 'host' property.
 	 *
-	 * @return string|null
+	 * @return string
 	 */
-	private function get_host()
+	private function get_host(): string
 	{
 		return $this->sPDO->host;
 	}
@@ -1113,9 +1097,9 @@ class QueryBuilder {
 	/**
 	 * 'port' property.
 	 *
-	 * @return int|null
+	 * @return int
 	 */
-	private function get_port()
+	private function get_port(): int
 	{
 		return $this->sPDO->port;
 	}
@@ -1125,7 +1109,7 @@ class QueryBuilder {
 	 *
 	 * @return void
 	 */
-	private function reset()
+	private function reset(): void
 	{
 		$this->operation = null;
 		$this->table = null;
@@ -1145,18 +1129,13 @@ class QueryBuilder {
 	 *
 	 * @param string $table Table name
 	 *
-	 * @return array|bool Table structure or false
+	 * @return array|false Table structure or false
 	 */
-	private function describe(string $table)
+	private function describe(string $table): array|false
 	{
 
-		// Define a fingerprint based on the SimplePDO connection data and the table name
-		if (is_array($this->sPDO->getConnectionData())) {
-			$fingerprint = implode(',', $this->sPDO->getConnectionData());
-		} else {
-			$fingerprint = $this->sPDO->getConnectionData();
-		}
-		$fingerprint = md5($fingerprint . ',' . $table);
+		// Define a fingerprint based on the SimplePDO DSN string
+		$fingerprint = md5($this->sPDO->getDSN() . ',' . $table);
 
 		// Check and return the table structure if it was obtained before
 		if (isset(self::$tableSchemas[$fingerprint])) {
@@ -1294,7 +1273,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getColsSQL()
+	private function getColsSQL(): string
 	{
 
 		// The output depends on the type of query operation
@@ -1334,7 +1313,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getFromSQL()
+	private function getFromSQL(): string
 	{
 		$str = '';
 		foreach ($this->from as $from) {
@@ -1372,7 +1351,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getWhereSQL()
+	private function getWhereSQL(): string
 	{
 		if (count($this->where) > 0) {
 			return ' WHERE (' . $this->parseWhereGroupConditions($this->where) . ')';
@@ -1390,7 +1369,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function parseWhereGroupConditions(mixed $expression)
+	private function parseWhereGroupConditions(array|string $expression): string
 	{
 
 		// If only exists one WHERE condition
@@ -1441,7 +1420,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getGroupSQL()
+	private function getGroupSQL(): string
 	{
 		if (count($this->group) > 0) {
 			return ' GROUP BY ' . implode(', ', $this->group);
@@ -1455,7 +1434,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getHavingSQL()
+	private function getHavingSQL(): string
 	{
 		if (strlen($this->having) > 0) {
 			return ' HAVING ' . $this->having;
@@ -1469,7 +1448,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getOrderSQL()
+	private function getOrderSQL(): string
 	{
 		if (count($this->order) > 0) {
 			return ' ORDER BY ' . implode(', ', $this->order);
@@ -1483,7 +1462,7 @@ class QueryBuilder {
 	 *
 	 * @return string
 	 */
-	private function getLimitSQL()
+	private function getLimitSQL(): string
 	{
 		$str = '';
 		if (isset($this->limit['start'])) {
@@ -1493,47 +1472,6 @@ class QueryBuilder {
 			}
 		}
 		return $str;
-	}
-
-	/**
-	 * Set a global connection data definition.
-	 *
-	 * @param string $name           Name of the connection
-	 * @param mixed  $connectionData
-	 * 
-	 * @return void
-	 */
-	public static function setConnectionData(string $name, mixed $connectionData)
-	{
-		self::$connectionsData[$name] = $connectionData;
-	}
-
-	/**
-	 * Return a global connection data definition.
-	 *
-	 * @param string $name Name of the connection.
-	 * 
-	 * @return mixed
-	 */
-	public static function getConnectionData(string $name)
-	{
-		if (self::connectionDataExists($name)) {
-			return self::$connectionsData[$name];
-		} else {
-			return null;
-		}
-	}
-
-	/**
-	 * Check if a global connection data was defined.
-	 *
-	 * @param string $name Name of the connection
-	 * 
-	 * @return bool
-	 */
-	public static function connectionDataExists(string $name)
-	{
-		return array_key_exists($name, self::$connectionsData);
 	}
 }
 ?>
