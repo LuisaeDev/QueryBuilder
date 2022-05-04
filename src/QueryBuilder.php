@@ -399,7 +399,7 @@ class QueryBuilder {
 	 * 
 	 * JOIN clauses could be defined in 2 ways:
 	 * 1- A string with a JOIN clause definition: "INNER JOIN table2 ON table1.id = table2.table1_id"
-	 * 2- An array with a several JOIN clauses definitions, each position could be spacified in two ways, such as a string or an array with 3 values: ['INNER JOIN', 'table2', 'table1.id = table2.table1_id']
+	 * 2- An key-pair array with a several JOIN clauses definitions, each position represents a JOIN, where the keyname is the join type ('INNER JOIN') and its value is an array of two positions [ 'table2', 'table1.id = table2.table1_id']
 	 *
 	 * @return self Self instance for chain
 	 */
@@ -629,7 +629,7 @@ class QueryBuilder {
 	 *
 	 * @return self Self instance for chain
 	 */
-	public function group(string $stm): self
+	public function groupBy(string $stm): self
 	{
 		$this->group = array();
 		array_push($this->group, $stm);
@@ -643,7 +643,7 @@ class QueryBuilder {
 	 *
 	 * @return self Self instance for chain
 	 */
-	public function addGroup(string $stm): self
+	public function addGroupBy(string $stm): self
 	{
 		array_push($this->group, $stm);
 		return $this;
@@ -669,7 +669,7 @@ class QueryBuilder {
 	 *
 	 * @return self Self instance for chain
 	 */
-	public function order(string $keyword): self
+	public function orderBy(string $keyword): self
 	{
 		$this->order = array();
 		array_push($this->order, $keyword);
@@ -683,7 +683,7 @@ class QueryBuilder {
 	 *
 	 * @return self Self instance for chain
 	 */
-	public function addOrder(string $keyword): self
+	public function addOrderBy(string $keyword): self
 	{
 		array_push($this->order, $keyword);
 		return $this;
@@ -717,7 +717,7 @@ class QueryBuilder {
 	{
 
 		// Obtain the SQL string
-		$sql = $this->getSQL() . ';';
+		$sql = $this->getSQL();
 
 		// Prepare and execute the PDO statement
 		try {
@@ -1061,7 +1061,7 @@ class QueryBuilder {
 				return '';
 				break;
 		}
-		return $str;
+		return $str . ';';
 	}
 
 	/**
@@ -1330,14 +1330,8 @@ class QueryBuilder {
 
 			// Add the JOIN clauses
 			if (is_array($from['join'])) {
-				foreach ($from['join'] as $join) {
-
-					// Each JOIN clause could be a string or array with 3 positions
-					if (is_array($join)) {
-						$str .= ' ' . $join[0] . ' ' . $join[1] . ' ON (' . $join[2] . ')';
-					} else {
-						$str .= ' ' . $join;
-					}
+				foreach ($from['join'] as $joinType => $joinDefinition) {
+					$str .= ' ' . $joinType . ' ' . $joinDefinition[0] . ' ON (' . $joinDefinition[1] . ')';
 				}
 			} else if (isset($from['join'])) {
 				$str .= ' ' . $from['join'];

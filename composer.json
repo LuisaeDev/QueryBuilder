@@ -15,6 +15,6 @@
         }
     ],
     "require": {
-        "luisaedev/simple-pdo": "^0.0.3"
+        "luisaedev/simple-pdo": "^1.0"
     }
 }

@@ -4,20 +4,20 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "84752606bf914322805372dd6736af71",
+    "content-hash": "f6127b88cb9c13e4c657169ad088c771",
     "packages": [
         {
             "name": "luisaedev/simple-pdo",
-            "version": "v0.0.3",
+            "version": "v1.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/LuisaeDev/SimplePDO.git",
-                "reference": "6525207ac1496268bcbcc2f96937eada3b85ce27"
+                "reference": "6109fcb773f878497be76a82256e1f37c1eaa05d"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LuisaeDev/SimplePDO/zipball/6525207ac1496268bcbcc2f96937eada3b85ce27",
-                "reference": "6525207ac1496268bcbcc2f96937eada3b85ce27",
+                "url": "https://api.github.com/repos/LuisaeDev/SimplePDO/zipball/6109fcb773f878497be76a82256e1f37c1eaa05d",
+                "reference": "6109fcb773f878497be76a82256e1f37c1eaa05d",
                 "shasum": ""
             },
             "type": "library",
@@ -39,9 +39,9 @@
             "description": "Pretty simple and fancy class for handle PDO connections and PDO statements using just one class",
             "support": {
                 "issues": "https://github.com/LuisaeDev/SimplePDO/issues",
-                "source": "https://github.com/LuisaeDev/SimplePDO/tree/v0.0.3"
+                "source": "https://github.com/LuisaeDev/SimplePDO/tree/v1.0.0"
             },
-            "time": "2022-04-30T02:20:37+00:00"
+            "time": "2022-04-30T22:03:58+00:00"
         }
     ],
     "packages-dev": [],
