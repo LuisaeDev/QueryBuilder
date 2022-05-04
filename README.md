@@ -56,6 +56,7 @@ QueryBuilder use PHP version 8.0 or higher and [PDO](https://www.php.net/manual/
 ```php
 use LuisaeDev\QueryBuilder\QueryBuilder;
 
+// Example of usage with mandatory connection data values
 $query = new QueryBuilder([
 	'dbname'   => 'test',
 	'user'     => 'root',
@@ -66,6 +67,7 @@ $query = new QueryBuilder([
 ```php
 use LuisaeDev\QueryBuilder\QueryBuilder;
 
+// Example of usage with all connection data values allowed and $throws argument to prevent/allow throws PDOException
 $query = new QueryBuilder([
 	'dbname'       => 'test',
 	'user'         => 'root',
