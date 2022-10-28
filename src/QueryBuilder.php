@@ -6,7 +6,7 @@ use PDO;
 use PDOException;
 use DateTime;
 use DateTimeZone;
-use LuisaeDev\SimplePDO\SimplePDO;
+use LuisaeDev\FlexPDO\FlexPDO;
 
 /**
  * Connect with SQL databases and perform complex SQL queries without define SQL statements manually.
@@ -18,8 +18,8 @@ use LuisaeDev\SimplePDO\SimplePDO;
  */
 class QueryBuilder {
 
-	/** @var LuisaeDev\SimplePDO\SimplePDO Connection to interact with the database */
-	private SimplePDO $sPDO;
+	/** @var LuisaeDev\FlexPDO\FlexPDO Connection to interact with the database */
+	private FlexPDO $fpdo;
 
 	/** @var string SQL operation to perform for the current query: SELECT, INSERT, UPDATE, DELETE ...  */
 	private ?string $operation = null;
@@ -66,13 +66,13 @@ class QueryBuilder {
 	public function __construct(array $connectionData, bool $throws = true)
 	{
 
-		// If connection is a SimplePDO instance
-		if ($connectionData instanceof \LuisaeDev\SimplePDO\SimplePDO) {
-			$this->sPDO = $connectionData;
+		// If connection is a FlexPDO instance
+		if ($connectionData instanceof \LuisaeDev\FlexPDO\FlexPDO) {
+			$this->fpdo = $connectionData;
 
-		// Create a new SimplePDO instance
+		// Create a new FlexPDO instance
 		} else {
-			$this->sPDO = new SimplePDO($connectionData, $throws);
+			$this->fpdo = new FlexPDO($connectionData, $throws);
 		}
 	}
 
@@ -87,6 +87,7 @@ class QueryBuilder {
 			return null;
 		}
 	}
+	
 	/**
 	 * Magic __clone method.
 	 */
@@ -105,7 +106,7 @@ class QueryBuilder {
 	 */
 	public function beginTransaction(): self
 	{
-		$this->sPDO->beginTransaction();
+		$this->fpdo->beginTransaction();
 		return $this;
 	}
 
@@ -118,7 +119,7 @@ class QueryBuilder {
 	 */
 	public function commit(): self
 	{
-		$this->sPDO->commit();
+		$this->fpdo->commit();
 		return $this;
 	}
 
@@ -131,7 +132,7 @@ class QueryBuilder {
 	 */
 	public function rollBack(): self
 	{
-		$this->sPDO->rollBack();
+		$this->fpdo->rollBack();
 		return $this;
 	}
 
@@ -142,7 +143,7 @@ class QueryBuilder {
 	 */
 	public function isAutocommit(): bool
 	{
-		return $this->sPDO->isAutocommit();
+		return $this->fpdo->isAutocommit();
 	}
 
 	/**
@@ -712,6 +713,7 @@ class QueryBuilder {
 	 * @param bool $throw Define if PDO Exceptions should be thrown
 	 *
 	 * @return self Self instance for chain
+	 * @throws PDOException
 	 */
 	public function execute(bool $throw = true): self
 	{
@@ -722,7 +724,7 @@ class QueryBuilder {
 		// Prepare and execute the PDO statement
 		try {
 
-			$this->sPDO
+			$this->fpdo
 				->prepare($sql, $this->params)
 				->execute();
 
@@ -742,7 +744,7 @@ class QueryBuilder {
 	 */
 	public function fetch(): array|false
 	{
-		return $this->sPDO->fetch();
+		return $this->fpdo->fetch();
 	}
 
 	/**
@@ -752,7 +754,7 @@ class QueryBuilder {
 	 */
 	public function fetchObject(): object|false
 	{
-		return $this->sPDO->fetchObject();
+		return $this->fpdo->fetchObject();
 	}
 
 	/**
@@ -762,7 +764,7 @@ class QueryBuilder {
 	 */
 	public function fetchAll(): array
 	{
-		return $this->sPDO->fetchAll();
+		return $this->fpdo->fetchAll();
 	}
 
 	/**
@@ -955,7 +957,7 @@ class QueryBuilder {
 	 */
 	public function errorInfo(): array
 	{
-		return $this->sPDO->errorInfo();
+		return $this->fpdo->errorInfo();
 	}
 
 	/**
@@ -965,7 +967,7 @@ class QueryBuilder {
 	 */
 	public function errorExists(): bool
 	{
-		return $this->sPDO->errorExists();
+		return $this->fpdo->errorExists();
 	}
 
 	/**
@@ -975,7 +977,7 @@ class QueryBuilder {
 	 */
 	public function lastInsertId(): mixed
 	{
-		return $this->sPDO->lastInsertId();
+		return $this->fpdo->lastInsertId();
 	}
 
 	/**
@@ -985,7 +987,7 @@ class QueryBuilder {
 	 */
 	public function rowCount(): int
 	{
-		return $this->sPDO->rowCount();
+		return $this->fpdo->rowCount();
 	}
 
 	/**
@@ -1071,7 +1073,7 @@ class QueryBuilder {
 	 */
 	private function get_dbname(): string
 	{
-		return $this->sPDO->dbname;
+		return $this->fpdo->dbname;
 	}
 
 	/**
@@ -1081,7 +1083,7 @@ class QueryBuilder {
 	 */
 	private function get_driver(): string
 	{
-		return $this->sPDO->driver;
+		return $this->fpdo->driver;
 	}
 
 	/**
@@ -1091,7 +1093,7 @@ class QueryBuilder {
 	 */
 	private function get_host(): string
 	{
-		return $this->sPDO->host;
+		return $this->fpdo->host;
 	}
 
 	/**
@@ -1101,7 +1103,7 @@ class QueryBuilder {
 	 */
 	private function get_port(): int
 	{
-		return $this->sPDO->port;
+		return $this->fpdo->port;
 	}
 	
 	/**
@@ -1134,8 +1136,8 @@ class QueryBuilder {
 	private function describe(string $table): array|false
 	{
 
-		// Define a fingerprint based on the SimplePDO DSN string
-		$fingerprint = md5($this->sPDO->getDSN() . ',' . $table);
+		// Define a fingerprint based on the FlexPDO DSN string
+		$fingerprint = md5($this->fpdo->getDSN() . ',' . $table);
 
 		// Check and return the table structure if it was obtained before
 		if (isset(self::$tableSchemas[$fingerprint])) {
@@ -1143,7 +1145,7 @@ class QueryBuilder {
 		}
 
 		// Set the SQL statement according to the database driver
-		switch ($this->sPDO->driver) {
+		switch ($this->fpdo->driver) {
 			case 'sqlite':
 			case 'mysql':
 				$sql = 'describe ' . $table;
@@ -1151,12 +1153,12 @@ class QueryBuilder {
 		}
 
 		// Prepare and execute the SQL statement
-		$this->sPDO
+		$this->fpdo
 			->prepare($sql)
 			->execute();
 
 		// Get the table's schema
-		$structure = $this->sPDO->fetchAll(true);
+		$structure = $this->fpdo->fetchAll(true);
 
 		// Return false if could not get the schema
 		if ((count($structure) == 0) || ($structure == null)) {
@@ -1171,7 +1173,7 @@ class QueryBuilder {
 
 		// Iterate all columns to obtain its respective column name and type
 		foreach ($structure as $column) {
-			switch ($this->sPDO->driver) {
+			switch ($this->fpdo->driver) {
 				case 'sqlite':
 					$columnName = $column['name'];
 					$colType = $column['type'];
@@ -1234,7 +1236,7 @@ class QueryBuilder {
 			);
 
 			// Define if it is the primary key
-			switch ($this->sPDO->driver) {
+			switch ($this->fpdo->driver) {
 				case 'sqlite':
 					if ($column['pk'] == 1) {
 						$table['pk'] = array(

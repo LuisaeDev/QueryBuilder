@@ -4,26 +4,26 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f6127b88cb9c13e4c657169ad088c771",
+    "content-hash": "a9e1e23b97d10c05e97c7fbfbeb0ab56",
     "packages": [
         {
-            "name": "luisaedev/simple-pdo",
+            "name": "luisaedev/flex-pdo",
             "version": "v1.0.0",
             "source": {
                 "type": "git",
-                "url": "https://github.com/LuisaeDev/SimplePDO.git",
-                "reference": "6109fcb773f878497be76a82256e1f37c1eaa05d"
+                "url": "https://github.com/LuisaeDev/FlexPDO.git",
+                "reference": "28259634aba9b9ea215f48684443a8bdbff5f9d7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/LuisaeDev/SimplePDO/zipball/6109fcb773f878497be76a82256e1f37c1eaa05d",
-                "reference": "6109fcb773f878497be76a82256e1f37c1eaa05d",
+                "url": "https://api.github.com/repos/LuisaeDev/FlexPDO/zipball/28259634aba9b9ea215f48684443a8bdbff5f9d7",
+                "reference": "28259634aba9b9ea215f48684443a8bdbff5f9d7",
                 "shasum": ""
             },
             "type": "library",
             "autoload": {
                 "psr-4": {
-                    "LuisaeDev\\SimplePDO\\": "src/"
+                    "LuisaeDev\\FlexPDO\\": "src/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",
@@ -33,15 +33,15 @@
             "authors": [
                 {
                     "name": "Luis Aguilar",
-                    "email": "dev@luisae.com"
+                    "email": "hi@luisae.dev"
                 }
             ],
-            "description": "Pretty simple and fancy class for handle PDO connections and PDO statements using just one class",
+            "description": "Flexible and fancy class for PHP, it will help you to handle PDO connections and PDO statements through a single instance.",
             "support": {
-                "issues": "https://github.com/LuisaeDev/SimplePDO/issues",
-                "source": "https://github.com/LuisaeDev/SimplePDO/tree/v1.0.0"
+                "issues": "https://github.com/LuisaeDev/FlexPDO/issues",
+                "source": "https://github.com/LuisaeDev/FlexPDO/tree/v1.0.0"
             },
-            "time": "2022-04-30T22:03:58+00:00"
+            "time": "2022-10-26T23:32:17+00:00"
         }
     ],
     "packages-dev": [],
@@ -52,5 +52,5 @@
     "prefer-lowest": false,
     "platform": [],
     "platform-dev": [],
-    "plugin-api-version": "2.2.0"
+    "plugin-api-version": "2.3.0"
 }
