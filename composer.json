@@ -1,6 +1,6 @@
 {
     "name": "luisaedev/query-builder",
-    "description": "Connect with databases and compose complex SQL queries without define any SQL statement manually.",
+    "description": "Connect with SQL databases and perform complex queries without define SQL statements manually",
     "type": "library",
     "license": "MIT",
     "autoload": {
@@ -11,10 +11,10 @@
     "authors": [
         {
             "name": "Luis Aguilar",
-            "email": "hi@luisae.dev"
+            "email": "dev@luisae.com"
         }
     ],
     "require": {
-        "luisaedev/flex-pdo": "^1.0"
+        "luisaedev/simple-pdo": "^1.0"
     }
 }
